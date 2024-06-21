@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "npx nodemon",
-    "build":"rimraf ./build && tsc"
+    "build": "rimraf ./build && tsc"
   },
   "keywords": [],
   "author": "",
@@ -13,11 +13,14 @@
   "dependencies": {
     "@types/express": "^4.17.21",
     "@types/node": "^20.14.7",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "mysql2": "^3.10.1",
     "nodemon": "^3.1.4",
+    "reflect-metadata": "^0.2.2",
     "rimraf": "^5.0.7",
     "sequelize": "^6.37.3",
+    "sequelize-typescript": "^2.1.6",
     "tsc-node": "^0.0.3"
   },
   "devDependencies": {
