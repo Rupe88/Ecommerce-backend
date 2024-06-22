@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import User from "../database/models/userModel";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { Secret } from "jsonwebtoken";
 class AuthController {
   public static async registerUser(req: Request, res: Response): Promise<void> {
     const { username, email, password, role } = req.body;
@@ -52,7 +52,7 @@ class AuthController {
     const isMatched = bcrypt.compareSync(password, data.password);
     if (isMatched) {
       //generate token
-     const token= jwt.sign({ id: data.id }, "hahaha", {
+     const token= jwt.sign({ id: data.id }, process.env.SECRET_KEY as string, {
         expiresIn: "20d",
       });
       res.status(200).json({

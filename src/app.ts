@@ -6,7 +6,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 app.use(express.json());
 
-const PORT: number = 3000 || process.env.PORT;
+const port = process.env.PORT || 3000
 
 
 
@@ -18,7 +18,7 @@ import adminSeeder from "./adminSeeder";
 
 //admin
 adminSeeder();
-app.listen(PORT, () => {
+app.listen(port, () => {
 
-  console.log(`server is running on http://localhost:${PORT}`);
+  console.log(`server is running on http://localhost:${port}`);
 });
