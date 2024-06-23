@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import * as dotenv from "dotenv";
 import User from "../database/models/userModel";
 dotenv.config();
-interface AuthRequest extends Request {
+export interface AuthRequest extends Request {
   user?: {
     username: string;
     email: string;
@@ -13,7 +13,7 @@ interface AuthRequest extends Request {
   };
 }
 
-enum Role {
+export enum Role {
   Admin = "admin",
   Customer = "customer",
 }
@@ -26,7 +26,7 @@ class AuthMiddleware {
   ): Promise<void> {
     //get token from user
     const token = req.headers.authorization;
-    if (!token) {
+    if (!token || token===undefined) {
       res.status(403).json({
         message: "token not provided",
       });
@@ -64,7 +64,7 @@ class AuthMiddleware {
     );
   }
 
-  restrictTo(...roles: Role[]) {
+ public static restrictTo(...roles: Role[]) {
     return (req: AuthRequest, res: Response, next: NextFunction) => {
       let userRole = req.user?.role as Role;
       if (!roles.includes(userRole)) {
