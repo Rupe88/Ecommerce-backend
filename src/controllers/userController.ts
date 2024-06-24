@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import User from "../database/models/userModel";
 import bcrypt from "bcryptjs";
-import jwt, { Secret } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 class AuthController {
   public static async registerUser(req: Request, res: Response): Promise<void> {
     const { username, email, password, role } = req.body;
@@ -13,6 +13,16 @@ class AuthController {
       return; //exit
     }
 
+    // Check if user already exists
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      res.status(400).json({
+        message: "User with this email already exists",
+        success: false,
+      });
+      return;
+    }
+    //user cereating
     await User.create({
       username,
       email,

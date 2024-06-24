@@ -17,8 +17,8 @@ router
   )
   .get(ProductController.getAllProducts);
 
-  // product herna pye but delete garna na paye
-  //because of due to Admin Role 
+// product herna pye but delete garna na paye
+//because of due to Admin Role
 router
   .route("/:id")
   .get(ProductController.getSingleProduct)
@@ -26,6 +26,12 @@ router
     AuthMiddleware.isAuthenticated,
     AuthMiddleware.restrictTo(Role.Admin),
     ProductController.deleteProduct
+  )
+  .patch(
+    AuthMiddleware.isAuthenticated,
+    AuthMiddleware.restrictTo(Role.Admin),
+    upload.single("productImage"), 
+    ProductController.updateProduct
   );
 
 export default router;

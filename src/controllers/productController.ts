@@ -5,6 +5,8 @@ import { AuthRequest } from "../middleware/authMiddleware";
 import Category from "../database/models/categoryModel";
 
 class ProductController {
+  // Existing methods...
+
   public static async addProduct(
     req: AuthRequest,
     res: Response
@@ -85,18 +87,16 @@ class ProductController {
     const data = await Product.findAll({
       where: {
         id: id,
-      
       },
-      include:[
+      include: [
         {
-          model:User,
-          attributes:["id", "email","username"]
+          model: User,
+          attributes: ["id", "email", "username"],
         },
         {
-          model:Category,
-          
-        }
-      ]
+          model: Category,
+        },
+      ],
     });
     if (data.length == 0) {
       res.status(404).json({
@@ -138,10 +138,52 @@ class ProductController {
     }
   }
 
-  //update paxi garxu 
+  // New updateProduct method
+  public static async updateProduct(
+    req: AuthRequest,
+    res: Response
+  ): Promise<void> {
+    const { id } = req.params;
+    const {
+      productName,
+      productDescription,
+      productTotalStoksQty,
+      productPrice,
+      categoryId,
+    } = req.body;
 
+    // product image
+    let fileName;
+    if (req.file) {
+      fileName = req.file?.filename;
+    }
 
+    const updateData: any = {};
+    if (productName) updateData.productName = productName;
+    if (productDescription) updateData.productDescription = productDescription;
+    if (productTotalStoksQty) updateData.productTotalStoksQty = productTotalStoksQty;
+    if (productPrice) updateData.productPrice = productPrice;
+    if (categoryId) updateData.categoryId = categoryId;
+    if (fileName) updateData.productImage = fileName;
 
+    try {
+      const [updated] = await Product.update(updateData, {
+        where: { id },
+      });
+
+      if (updated) {
+        const updatedProduct = await Product.findOne({ where: { id } });
+        res.status(200).json({
+          message: "Product updated successfully",
+          product: updatedProduct,
+        });
+      } else {
+        res.status(404).json({ message: "Product not found" });
+      }
+    } catch (error:any) {
+      res.status(500).json({ message: "An error occurred", error: error.message });
+    }
+  }
 }
 
 export default ProductController;
