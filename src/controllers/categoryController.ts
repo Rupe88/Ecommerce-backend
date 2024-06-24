@@ -22,7 +22,7 @@ class CategoryController {
       console.log("category already seeded");
     }
   }
-  public static async addCategory(req: Request, res: Response): Promise<void> {
+  async addCategory(req: Request, res: Response): Promise<void> {
     const { categoryName } = req.body;
     if (!categoryName) {
       res.status(400).json({
@@ -39,7 +39,7 @@ class CategoryController {
     }
   }
 
-  public static async getCategory(req: Request, res: Response): Promise<void> {
+  async getCategory(req: Request, res: Response): Promise<void> {
     const data = await Category.findAll();
     res.status(200).json({
       message: "Category fetched",
@@ -47,7 +47,7 @@ class CategoryController {
     });
   }
 
-  public static async deleteCategory(
+ async deleteCategory(
     req: Request,
     res: Response
   ): Promise<void> {
@@ -73,12 +73,12 @@ class CategoryController {
     }
   }
 
-  public static async updateCategory(
+  async updateCategory(
     req: Request,
     res: Response
   ): Promise<void> {
     const { id } = req.params;
-    const categoryName = req.body;
+    const {categoryName} = req.body;
     await Category.update(
       {
         categoryName,

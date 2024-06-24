@@ -2,6 +2,7 @@ import express from "express";
 import { Application } from "express";
 import userRoute from "./routes/userRoute";
 import productRoute from "./routes/productRoute";
+import categoryRoute from "./routes/categoryRoute"
 const app: Application = express();
 import * as dotenv from "dotenv";
 
@@ -13,6 +14,7 @@ const port = process.env.PORT || 3000;
 
 app.use("", userRoute);
 app.use("/admin/product", productRoute);
+app.use("/admin/category", categoryRoute);
 
 //listening
 import "./database/connection";
