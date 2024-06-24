@@ -32,4 +32,4 @@ Product.belongsTo(User, {foreignKey:"userId"})
 Product.belongsTo(Category, {foreignKey:"categoryId"})
 Category.hasOne(Product,{foreignKey:"categoryId"})
 
-export default sequelize
+export default sequelize;

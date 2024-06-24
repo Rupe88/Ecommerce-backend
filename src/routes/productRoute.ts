@@ -17,4 +17,15 @@ router
   )
   .get(ProductController.getAllProducts);
 
+  // product herna pye but delete garna na paye
+  //because of due to Admin Role 
+router
+  .route("/:id")
+  .get(ProductController.getSingleProduct)
+  .delete(
+    AuthMiddleware.isAuthenticated,
+    AuthMiddleware.restrictTo(Role.Admin),
+    ProductController.deleteProduct
+  );
+
 export default router;

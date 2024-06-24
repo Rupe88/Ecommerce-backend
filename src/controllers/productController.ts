@@ -75,6 +75,7 @@ class ProductController {
       data,
     });
   }
+
   public static async getSingleProduct(
     req: Request,
     res: Response,
@@ -84,7 +85,18 @@ class ProductController {
     const data = await Product.findAll({
       where: {
         id: id,
+      
       },
+      include:[
+        {
+          model:User,
+          attributes:["id", "email","username"]
+        },
+        {
+          model:Category,
+          
+        }
+      ]
     });
     if (data.length == 0) {
       res.status(404).json({
@@ -97,6 +109,7 @@ class ProductController {
       });
     }
   }
+
   public static async deleteProduct(
     req: Request,
     res: Response,
@@ -110,20 +123,25 @@ class ProductController {
     });
 
     if (data.length > 0) {
-      Product.destroy({
+      await Product.destroy({
         where: {
           id: id,
         },
       });
       res.status(200).json({
-        message:"Product delete successfully"
-      })
-    }else{
+        message: "Product deleted successfully",
+      });
+    } else {
       res.status(404).json({
-        message:"no product found with that id"
-      })
+        message: "no product found with that id",
+      });
     }
   }
+
+  //update paxi garxu 
+
+
+
 }
 
 export default ProductController;
