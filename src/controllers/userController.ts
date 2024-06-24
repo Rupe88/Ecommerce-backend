@@ -12,11 +12,12 @@ class AuthController {
       });
       return; //exit
     }
+
     await User.create({
       username,
       email,
       password: bcrypt.hashSync(password, 10),
-      role:role
+      role: role,
     });
     res.status(200).json({
       success: true,
@@ -52,14 +53,17 @@ class AuthController {
     const isMatched = bcrypt.compareSync(password, data.password);
     if (isMatched) {
       //generate token
-     const token= jwt.sign({ id: data.id }, process.env.SECRET_KEY as string, {
-        expiresIn: "20d",
-      });
+      const token = jwt.sign(
+        { id: data.id },
+        process.env.SECRET_KEY as string,
+        {
+          expiresIn: "20d",
+        }
+      );
       res.status(200).json({
         token,
-        message:"logged in Success"
-
-      })
+        message: "logged in Success",
+      });
     } else {
       res.status(403).json({
         message: "Invalid email or password",

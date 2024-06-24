@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import Product from "../database/models/productModel";
 import User from "../database/models/userModel";
 import { AuthRequest } from "../middleware/authMiddleware";
@@ -62,19 +62,67 @@ class ProductController {
       include: [
         {
           model: User,
-          attributes: ['id','email', 'username'], // Ensure 'username' is included
+          attributes: ["id", "email", "username"], // Ensure 'username' is included
         },
         {
-          model:Category,
-          attributes:["id", "categoryName"]
-         
-        }
+          model: Category,
+          attributes: ["id", "categoryName"],
+        },
       ],
     });
     res.status(200).json({
       message: "Products fetched successfully",
       data,
     });
+  }
+  public static async getSingleProduct(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const { id } = req.params;
+    const data = await Product.findAll({
+      where: {
+        id: id,
+      },
+    });
+    if (data.length == 0) {
+      res.status(404).json({
+        message: "no product with that id",
+      });
+    } else {
+      res.status(200).json({
+        message: "Product fetch success",
+        data,
+      });
+    }
+  }
+  public static async deleteProduct(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const { id } = req.params;
+    const data = await Product.findAll({
+      where: {
+        id: id,
+      },
+    });
+
+    if (data.length > 0) {
+      Product.destroy({
+        where: {
+          id: id,
+        },
+      });
+      res.status(200).json({
+        message:"Product delete successfully"
+      })
+    }else{
+      res.status(404).json({
+        message:"no product found with that id"
+      })
+    }
   }
 }
 

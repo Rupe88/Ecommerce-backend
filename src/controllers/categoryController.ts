@@ -20,6 +20,7 @@ class CategoryController {
     } else {
       console.log("category already seeded");
     }
+    
   }
 }
 
