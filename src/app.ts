@@ -2,7 +2,9 @@ import express from "express";
 import { Application } from "express";
 import userRoute from "./routes/userRoute";
 import productRoute from "./routes/productRoute";
-import categoryRoute from "./routes/categoryRoute"
+import categoryRoute from "./routes/categoryRoute";
+import cartRoute from "./routes/cartRoute";
+
 const app: Application = express();
 import * as dotenv from "dotenv";
 
@@ -15,6 +17,7 @@ const port = process.env.PORT || 3000;
 app.use("", userRoute);
 app.use("/admin/product", productRoute);
 app.use("/admin/category", categoryRoute);
+app.use("/customer/cart", cartRoute);
 
 //listening
 import "./database/connection";
@@ -25,6 +28,6 @@ import categoryController from "./controllers/categoryController";
 adminSeeder();
 
 app.listen(port, () => {
-  categoryController.seedCategory()
+  categoryController.seedCategory();
   console.log(`server is running on http://localhost:${port}`);
 });
