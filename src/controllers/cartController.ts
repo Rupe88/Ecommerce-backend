@@ -1,4 +1,5 @@
 import Cart from "../database/models/cartModel";
+import Product from "../database/models/productModel";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { Request, Response } from "express";
 class CartController {
@@ -34,6 +35,32 @@ class CartController {
         data:cartItem
     })
   }
+  async getMyCartItems(req:AuthRequest, res:Response):Promise<void>{
+    const userId=req.user?.id;
+    const cartItems=await Cart.findAll({
+        where:{
+            userId
+        },
+        include:[
+            {
+                model:Product,
+            }
+        ]
+    })
+    if(cartItems.length==0){
+        res.status(404).json({
+            message:"no item in the cart"
+        })
+    }else{
+        res.status(404).json({
+            message:"cart item fetch successfully",
+            data:cartItems
+        })
+    }
+
+  }
+
+  
 }
 
 export default new CartController;

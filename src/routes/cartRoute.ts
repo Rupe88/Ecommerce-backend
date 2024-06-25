@@ -9,6 +9,6 @@ router
   .post(
     AuthMiddleware.isAuthenticated,
     cartController.addToCart
-  );
+  ).get(AuthMiddleware.isAuthenticated, cartController.getMyCartItems)
 
 export default router;
