@@ -2,7 +2,7 @@ import Cart from "../database/models/cartModel";
 import Category from "../database/models/categoryModel";
 import Product from "../database/models/productModel";
 import { AuthRequest } from "../middleware/authMiddleware";
-import { Request, Response } from "express";
+import { Response } from "express";
 
 
 class CartController {
