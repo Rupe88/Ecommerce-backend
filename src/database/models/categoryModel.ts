@@ -15,7 +15,7 @@ class Category extends Model {
   declare id: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.STRING(255),
     allowNull: false, // Add allowNull if required
   })
   declare categoryName: string;
