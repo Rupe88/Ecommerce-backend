@@ -1,7 +1,10 @@
 import Cart from "../database/models/cartModel";
+import Category from "../database/models/categoryModel";
 import Product from "../database/models/productModel";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { Request, Response } from "express";
+
+
 class CartController {
   async addToCart(req: AuthRequest, res: Response): Promise<void> {
     const userId = req.user?.id;
@@ -22,45 +25,107 @@ class CartController {
     if (cartItem) {
       cartItem.quantity += quantity;
       await cartItem.save();
-    }else{
-        //insert into the cart
-      cartItem= await Cart.create({
-            quantity,
-            productId,
-            userId
-        })
+    } else {
+      //insert into the cart
+      cartItem = await Cart.create({
+        quantity,
+        productId,
+        userId,
+      });
     }
     res.status(200).json({
-        message:"product added to cart",
-        data:cartItem
-    })
+      message: "product added to cart",
+      data: cartItem,
+    });
   }
-  async getMyCartItems(req:AuthRequest, res:Response):Promise<void>{
-    const userId=req.user?.id;
-    const cartItems=await Cart.findAll({
-        where:{
-            userId
-        },
-        include:[
+  async getMyCartItems(req: AuthRequest, res: Response): Promise<void> {
+    const userId = req.user?.id;
+    const cartItems = await Cart.findAll({
+      where: {
+        userId,
+      },
+      include: [
+        {
+          model: Product,
+          include: [
             {
-                model:Product,
-            }
-        ]
+              model: Category,
+              attributes: ["id", "categoryName"],
+            },
+          ],
+        },
+      ],
+    });
+    if (cartItems.length == 0) {
+      res.status(404).json({
+        message: "no item in the cart",
+      });
+    } else {
+      res.status(404).json({
+        message: "cart item fetch successfully",
+        data: cartItems,
+      });
+    }
+  }
+  async deleteCartItem(req: AuthRequest, res: Response): Promise<void> {
+    const userId = req.user?.id;
+    const { productId } = req.params;
+    //check wheather above productId product exists or not
+    const product = await Product.findByPk(productId);
+    if (!product) {
+      res.status(404).json({
+        message: "no product with that id",
+      });
+      return;
+    }
+    //delete that productId from cart
+    await Cart.destroy({
+      where: {
+        userId,
+        productId,
+      },
+    });
+    res.status(200).json({
+      message: "cart deleted successfully",
+    });
+  }
+
+  async updateCartItems(req: AuthRequest, res: Response): Promise<void> {
+    //update cart items
+    const {productId}=req.params;
+    const userId=req.user?.id;
+    const {quantity}=req.body;
+    if(!quantity){
+      res.status(400).json({
+        message:"cart quantity not found"
     })
-    if(cartItems.length==0){
-        res.status(404).json({
-            message:"no item in the cart"
-        })
+    return
+    }
+    const cartData=await Cart.findOne({
+      where:{
+        userId,
+        productId
+      }
+    })
+   
+    if(cartData) {
+      cartData.quantity=quantity
+      await cartData?.save()
+
+      res.status(200).json({
+        message :"product of cart added successfully",
+        data:cartData
+      })
     }else{
-        res.status(404).json({
-            message:"cart item fetch successfully",
-            data:cartItems
-        })
+      res.status(500).json({
+        message:"no productId of that userId "
+      })
     }
 
-  }
+
 
   
+  }
 }
 
-export default new CartController;
+export default new CartController();
