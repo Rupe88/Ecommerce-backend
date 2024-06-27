@@ -4,14 +4,13 @@ import Product from "../database/models/productModel";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { Response } from "express";
 
-
 class CartController {
   async addToCart(req: AuthRequest, res: Response): Promise<void> {
     const userId = req.user?.id;
     const { quantity, productId } = req.body;
     if (!quantity || !productId) {
       res.status(404).json({
-        message: "PLease provide quantity ,  productId",
+        message: "PLease provide quantity , productId",
       });
     }
     //check if the product is already exists or not

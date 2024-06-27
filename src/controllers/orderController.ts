@@ -36,6 +36,7 @@ class OrderController {
       shippingAddress,
       totalAmount,
       userId,
+      orderStatus: 'pending',
     });
 
     await Payment.create({
