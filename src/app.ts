@@ -4,6 +4,7 @@ import userRoute from "./routes/userRoute";
 import productRoute from "./routes/productRoute";
 import categoryRoute from "./routes/categoryRoute";
 import cartRoute from "./routes/cartRoute";
+import orderRoute from "./routes/orderRoute"
 
 const app: Application = express();
 import * as dotenv from "dotenv";
@@ -18,6 +19,7 @@ app.use("", userRoute);
 app.use("/admin/product", productRoute);
 app.use("/admin/category", categoryRoute);
 app.use("/customer/cart", cartRoute);
+app.use("/customer/order", orderRoute);
 
 //listening
 import "./database/connection";
