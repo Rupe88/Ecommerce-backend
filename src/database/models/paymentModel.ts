@@ -15,7 +15,7 @@ class Payment extends Model {
   declare id: string;
 
   @Column({
-    type: DataType.ENUM('COD','Khalti', 'Esewa'),
+    type: DataType.ENUM('cod','khalti', 'esewa'),
     allowNull: false, 
   })
   declare paymentMethod: string;

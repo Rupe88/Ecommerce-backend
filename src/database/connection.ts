@@ -51,13 +51,15 @@ Order.hasMany(OrderDetail, { foreignKey: "orderId" });
 OrderDetail.belongsTo(Order, { foreignKey: "orderId" });
 
 //order detail ra product ko relation
-Product.hasMany(OrderDetail, {foreignKey:"productId"});
-OrderDetail.belongsTo(Product, {foreignKey:"productId"});
+Product.hasMany(OrderDetail, { foreignKey: "productId" });
+OrderDetail.belongsTo(Product, { foreignKey: "productId" });
 
 //order ra payment ko realtion
-Payment.hasOne(Order,{foreignKey:'paymentId'})
-Order.belongsTo(Payment,{foreignKey:'paymentId'})
+Payment.hasOne(Order, { foreignKey: "paymentId" });
+Order.belongsTo(Payment, { foreignKey: "paymentId" });
 
-
+//order user relation
+User.hasMany(Order, { foreignKey: "userId" });
+Order.belongsTo(User,{foreignKey:"userId"})
 
 export default sequelize;
