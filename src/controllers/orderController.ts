@@ -1,12 +1,16 @@
-import { KhaltiResponse, OrderData, PaymentMethod } from "./../types/orderTypes";
+import {
+  KhaltiResponse,
+  OrderData,
+  PaymentMethod,
+  TransactionStatus,
+  TransactionVerificationResponse,
+} from "./../types/orderTypes";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { Response } from "express";
 import Order from "../database/models/orderModel";
 import Payment from "../database/models/paymentModel";
 import OrderDetail from "../database/models/orderDetailsModel";
 import axios from "axios";
-
-
 
 class OrderController {
   async createOrder(req: AuthRequest, res: Response): Promise<void> {
@@ -31,20 +35,18 @@ class OrderController {
       });
       return;
     }
- 
-   const paymentData= await Payment.create({
-      paymentMethod: paymentDetails.paymentMethod,
 
-      
+    const paymentData = await Payment.create({
+      paymentMethod: paymentDetails.paymentMethod,
     });
     const orderData = await Order.create({
       phoneNumber,
       shippingAddress,
       totalAmount,
       userId,
-      paymentId:paymentData.id
+      paymentId: paymentData.id,
     });
-  
+
     for (let i = 0; i < items.length; i++) {
       await OrderDetail.create({
         quantity: items[i].quantity,
@@ -62,24 +64,62 @@ class OrderController {
         website_url: "http://localhost:8000/",
         purchase_order_name: "orderName_" + orderData.id,
       };
-     const response=await axios.post("https://a.khalti.com/api/v2/epayment/initiate/",data,{
-        headers:{
-          "Authorization":"key 71a56624ea054ef4b09fb0cd761de5ef"
+      const response = await axios.post(
+        "https://a.khalti.com/api/v2/epayment/initiate/",
+        data,
+        {
+          headers: {
+            "Authorization": "key 71a56624ea054ef4b09fb0cd761de5ef",
+          },
         }
-      })
-     const khaltiResponse:KhaltiResponse=response.data
-     paymentData.pidx=khaltiResponse.pidx
-     paymentData.save()
-     res.status(200).json({
-      message:"order placed success",
-      url:khaltiResponse.payment_url
-     })
+      );
+      //
+      const khaltiResponse: KhaltiResponse = response.data;
+      console.log(data)
+      paymentData.pidx = khaltiResponse.pidx;
+      paymentData.save();
+      res.status(200).json({
+        message: "order placed success",
+        url: khaltiResponse.payment_url,
+      });
     } else {
       res.status(200).json({
         message: "Order placed successfully!",
       });
     }
   }
+//verify transition
+  async verifyTransaction(req:AuthRequest,res:Response):Promise<void>{
+    const {pidx}= req.body 
+
+    if(!pidx){
+        res.status(400).json({
+            message : "Please provide pidx"
+        })
+        return
+    }
+    const response = await axios.post("https://a.khalti.com/api/v2/epayment/lookup/",{pidx},{
+        headers : {
+            "Authorization" : "key 71a56624ea054ef4b09fb0cd761de5ef"
+        }
+    })
+    const data:TransactionVerificationResponse = response.data 
+    console.log(data)
+    if(data.status === TransactionStatus.Completed ){
+      await Payment.update({paymentStatus:'paid'},{
+        where : {
+            pidx : pidx
+        }
+      })
+      res.status(200).json({
+        message : "Payment verified successfully"
+      })
+    }else{
+        res.status(200).json({
+            message : "Payment not verified"
+        })
+    }
+}
 }
 
-export default new OrderController();
+export default new OrderController;

@@ -13,4 +13,7 @@ router
     errorHandler(orderController.createOrder)
   );
 
+  router.route("/verify").post(AuthMiddleware.isAuthenticated,errorHandler(orderController.verifyTransaction))
+  
+
 export default router;
