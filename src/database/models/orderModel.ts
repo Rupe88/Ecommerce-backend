@@ -1,42 +1,53 @@
-import { UUIDV4 } from "sequelize";
-import { Table, Column, DataType, Model } from "sequelize-typescript";
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+} from 'sequelize-typescript'
 
 @Table({
-  tableName: "orders",
-  modelName: "Order",
-  timestamps: true,
+  tableName : 'orders',
+  modelName : 'Order',
+  timestamps : true
 })
-class Order extends Model {
+
+class Order extends Model{
   @Column({
-    primaryKey: true,
-    type: DataType.UUID,
-    defaultValue: UUIDV4,
+      primaryKey : true,
+      type : DataType.UUID,
+      defaultValue : DataType.UUIDV4
   })
-  declare id: string;
+  declare id:string;
 
   @Column({
-    type: DataType.STRING,
-    allowNull: false, // Moved inside the decorator
+      type : DataType.STRING,
+      allowNull : false,
+      validate : {
+          len : {
+              args : [10,10],
+              msg : 'Phone number must be 10 digits'
+          }
+      }
   })
-  declare phoneNumber: string;
+  declare phoneNumber : string
 
   @Column({
-    type: DataType.STRING,
-    allowNull: false, // Add allowNull if required
+      type : DataType.STRING,
+      allowNull : false
   })
-  declare shippingAddress: string;
+  declare shippingAddress : string
 
   @Column({
-    type: DataType.FLOAT,
-    allowNull: false, // Add allowNull if required
+      type : DataType.FLOAT,
+      allowNull : false
   })
-  declare totalAmount: number;
+  declare totalAmount : number
 
   @Column({
-    type: DataType.ENUM('pending', 'cancelled', 'delivered', 'preparation', 'ontheway'),
-    allowNull: false, // Add allowNull if required
+      type : DataType.ENUM('pending','cancelled','delivered','ontheway','preparation'),
+      defaultValue : 'pending'
   })
-  declare orderStatus: string;
+  declare orderStatus : string
 }
 
-export default Order;
+export default Order

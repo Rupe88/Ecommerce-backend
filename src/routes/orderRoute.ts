@@ -1,8 +1,8 @@
 import express, { Router } from "express";
 import AuthMiddleware, { Role } from "../middleware/authMiddleware";
-import categoryController from "../controllers/categoryController";
 import errorHandler from "../services/catchAsyncError";
 import orderController from "../controllers/orderController";
+
 
 const router: Router = express.Router();
 
