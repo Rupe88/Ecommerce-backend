@@ -1,7 +1,9 @@
 import {
   KhaltiResponse,
   OrderData,
+  OrderStatus,
   PaymentMethod,
+  PaymentStatus,
   TransactionStatus,
   TransactionVerificationResponse,
 } from "./../types/orderTypes";
@@ -11,6 +13,7 @@ import Order from "../database/models/orderModel";
 import Payment from "../database/models/paymentModel";
 import OrderDetail from "../database/models/orderDetailsModel";
 import axios from "axios";
+import Product from "../database/models/productModel";
 
 class OrderController {
   async createOrder(req: AuthRequest, res: Response): Promise<void> {
@@ -56,70 +59,188 @@ class OrderController {
     }
 
     if (paymentDetails.paymentMethod === PaymentMethod.Khalti) {
-      //khalti intregation
+      // Khalti integration
       const data = {
-        return_url: "http://localhost:8000/success",
+        return_url: "http://localhost:8000/success/",
         purchase_order_id: orderData.id,
-        amount: totalAmount * 100, //converting ruppes into poisa
+        amount: totalAmount * 100, // converting rupees into poisa
         website_url: "http://localhost:8000/",
-        purchase_order_name: "orderName_" + orderData.id,
+        purchase_order_name: 'orderName_' + orderData.id,
       };
-      const response = await axios.post(
-        "https://a.khalti.com/api/v2/epayment/initiate/",
-        data,
-        {
-          headers: {
-            "Authorization": "key 71a56624ea054ef4b09fb0cd761de5ef",
-          },
-        }
-      );
-      //
-      const khaltiResponse: KhaltiResponse = response.data;
-      console.log(data)
-      paymentData.pidx = khaltiResponse.pidx;
-      paymentData.save();
-      res.status(200).json({
-        message: "order placed success",
-        url: khaltiResponse.payment_url,
-      });
+      try {
+        const response = await axios.post(
+          "https://a.khalti.com/api/v2/epayment/initiate/",
+          data,
+          {
+            headers: {
+              'Authorization': 'key 71a56624ea054ef4b09fb0cd761de5ef',
+            },
+          }
+        );
+        const khaltiResponse: KhaltiResponse = response.data;
+        console.log(data);
+        paymentData.pidx = khaltiResponse.pidx;
+        await paymentData.save();
+        res.status(200).json({
+          message: "Order placed successfully",
+          url: khaltiResponse.payment_url,
+        });
+      } catch (error) {
+        console.error("Khalti initiation error:", error);
+        res.status(500).json({
+          message: "Failed to initiate payment",
+        });
+      }
     } else {
       res.status(200).json({
         message: "Order placed successfully!",
       });
     }
   }
-//verify transition
-  async verifyTransaction(req:AuthRequest,res:Response):Promise<void>{
-    const {pidx}= req.body 
 
-    if(!pidx){
-        res.status(400).json({
-            message : "Please provide pidx"
-        })
-        return
+  // Verify transaction
+  async verifyTransaction(req: AuthRequest, res: Response): Promise<void> {
+    const { pidx } = req.body;
+
+    if (!pidx) {
+      res.status(400).json({
+        message: "Please provide pidx",
+      });
+      return;
     }
-    const response = await axios.post("https://a.khalti.com/api/v2/epayment/lookup/",{pidx},{
-        headers : {
-            "Authorization" : "key 71a56624ea054ef4b09fb0cd761de5ef"
+
+    try {
+      const response = await axios.post(
+        "https://a.khalti.com/api/v2/epayment/lookup/",
+        { pidx },
+        {
+          headers: {
+            'Authorization': 'key 71a56624ea054ef4b09fb0cd761de5ef',
+          },
         }
-    })
-    const data:TransactionVerificationResponse = response.data 
-    console.log(data)
-    if(data.status === TransactionStatus.Completed ){
-      await Payment.update({paymentStatus:'paid'},{
-        where : {
-            pidx : pidx
+      );
+      const data: TransactionVerificationResponse = response.data;
+      console.log(data);
+
+      if (data.status === TransactionStatus.Completed) {
+        const [updatedRows] = await Payment.update(
+          { paymentStatus: PaymentStatus.Paid },
+          {
+            where: {
+              pidx: pidx,
+            },
+          }
+        );
+
+        if (updatedRows === 0) {
+          res.status(400).json({
+            message: "Payment record not found or already updated",
+          });
+        } else {
+          res.status(200).json({
+            message: "Payment verified successfully",
+          });
         }
-      })
-      res.status(200).json({
-        message : "Payment verified successfully"
-      })
-    }else{
+      } else {
         res.status(200).json({
-            message : "Payment not verified"
-        })
+          message: "Payment not verified",
+        });
+      }
+    } catch (error) {
+      console.error("Khalti verification error:", error);
+      res.status(500).json({
+        message: "Failed to verify payment",
+      });
     }
-}
+  }
+
+  // Fetch orders for a user
+  async fetchMyOrders(req: AuthRequest, res: Response): Promise<void> {
+    const userId = req.user?.id;
+    const orders = await Order.findAll({
+      where: {
+        userId,
+      },
+      include: [
+        {
+          model: Payment,
+        },
+      ],
+    });
+
+    if (orders.length > 0) {
+      res.status(200).json({
+        message: "Order fetched successfully!",
+        data: orders,
+      });
+    } else {
+      res.status(404).json({
+        message: "You haven't ordered anything yet",
+        data: [],
+      });
+    }
+  }
+
+  // Fetch order details
+  async fetchOrderDetails(req: AuthRequest, res: Response): Promise<void> {
+    const orderId = req.params.id;
+    const orderDetails = await OrderDetail.findAll({
+      where: {
+        orderId,
+      },
+      include: [
+        {
+          model: Product,
+        },
+      ],
+    });
+
+    if (orderDetails.length > 0) {
+      res.status(200).json({
+        message: "Order fetched successfully",
+        data: orderDetails,
+      });
+    } else {
+      res.status(404).json({
+        message: "No order details found for that ID",
+        data: [],
+      });
+    }
+  }
+
+  // Cancel an order
+  async cancelMyOrder(req: AuthRequest, res: Response): Promise<void> {
+    const userId = req.user?.id;
+    const orderId = req.params.id;
+    const order: any = await Order.findAll({
+      where: {
+        userId,
+        id: orderId,
+      },
+    });
+
+    if (
+      order?.OrderStatus === OrderStatus.Ontheway ||
+      order?.OrderStatus === OrderStatus.Preparation
+    ) {
+      res.status(400).json({
+        message: "You cannot cancel the order when it is on the way or being prepared",
+      });
+      return;
+    }
+
+    await Order.update(
+      { OrderStatus: OrderStatus.Cancelled },
+      {
+        where: {
+          id: orderId,
+        },
+      }
+    );
+    res.status(200).json({
+      message: "Order cancelled successfully",
+    });
+  }
 }
 
-export default new OrderController;
+export default new OrderController();
