@@ -35,5 +35,30 @@ router
     AuthMiddleware.isAuthenticated,
     errorHandler(orderController.fetchOrderDetails)
   );
+  router
+  .route("/admin/:id")
+  .delete(
+    AuthMiddleware.isAuthenticated,
+    AuthMiddleware.restrictTo(Role.Admin),
+    errorHandler(orderController.changePaymentStatus)
+  );
+
+router
+  .route("/admin/:id")
+  .patch(
+    AuthMiddleware.isAuthenticated,
+    AuthMiddleware.restrictTo(Role.Admin),
+    errorHandler(orderController.changeOrderStatus)
+  );
+
+  router
+  .route("/admin/:id")
+  .delete(
+    AuthMiddleware.isAuthenticated,
+    AuthMiddleware.restrictTo(Role.Admin),
+    errorHandler(orderController.deleteOrder)
+  );
+
+
 
 export default router;
