@@ -8,12 +8,15 @@ import {
   TransactionVerificationResponse,
 } from "./../types/orderTypes";
 import { AuthRequest } from "../middleware/authMiddleware";
-import { Response } from "express";
+import { Response , Request} from "express";
 import Order from "../database/models/orderModel";
 import Payment from "../database/models/paymentModel";
 import OrderDetail from "../database/models/orderDetailsModel";
 import axios from "axios";
 import Product from "../database/models/productModel";
+ class ExtendedOrder extends Order{
+  declare paymentId:string | null
+}
 
 class OrderController {
   async createOrder(req: AuthRequest, res: Response): Promise<void> {
@@ -241,6 +244,38 @@ class OrderController {
       message: "Order cancelled successfully",
     });
   }
+  //Customer side end here
+  //admin side start here
+  async changeOrderStatus(req:Request, res:Response):Promise<void>{
+    const orderId=req.params.id;
+    const orderStatus:OrderStatus=req.body.OrderStatus;
+    await Order.update({
+      orderStatus:orderStatus
+    },{
+      where:{
+        id:orderId
+      }
+    })
+    res.status(200).json({
+      message:"order status updated successfully"
+    })
+
+  }
+//change payment status
+  async changePaymentStatus(req:Request, res:Response):Promise<void>{
+    const orderId=req.params.id;
+    const paymentStatus:PaymentStatus=req.body.paymentStatus
+    const order=await Order.findByPk(orderId);
+    const extendedOrder:ExtendedOrder=order as ExtendedOrder
+    await Payment.update({
+    paymentStatus:paymentStatus
+    },{
+      where:{
+        id:extendedOrder.paymentId
+      }
+    })
+  }
+
 }
 
 export default new OrderController();
