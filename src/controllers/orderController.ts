@@ -290,21 +290,24 @@ class OrderController {
     const order = await Order.findByPk(orderId);
     const extendedOrder: ExtendedOrder = order as ExtendedOrder;
     if (order) {
-      await Order.destroy({
-        where: {
-          id: orderId,
-        },
-      });
       await OrderDetail.destroy({
         where: {
           orderId: orderId,
         },
       });
+
       await Payment.destroy({
         where: {
           id: extendedOrder.paymentId,
         },
       });
+      await Order.destroy({
+        where: {
+          id: orderId,
+        },
+      });
+   
+      
       res.status(200).json({
         message: "order deleted successfully",
       });
